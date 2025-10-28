@@ -22,3 +22,6 @@ It uses the **AssemblyAI API** to transcribe audio files into text, forming the 
 - 🗣️ Add Text-to-Speech (TTS) to convert Groq responses back to audio
 
 - 🌐 Develop a frontend UI (Chainlit or React) for real-time interaction
+
+## How it looks like:
+https://drive.google.com/file/d/1BsmgNFruu0dOickkm6SN6aLGAjn5jxVP/view?usp=sharing
