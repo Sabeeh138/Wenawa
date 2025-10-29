@@ -21,18 +21,5 @@ Developed as part of our AI project research under guidance of **Sir Wasiq Muham
 
 ---
 
-## 🧩 Project Architecture
-
-🎙️ User Voice
-│
-▼
-[Speech-to-Text] → AssemblyAI API
-│
-▼
-[Groq LLM] → Natural Language Response Generation
-│
-▼
-[Text-to-Speech] → Coqui TTS
-│
-▼
-🔊 Spoken AI Reply
+## HERES THE Project Demo
+https://drive.google.com/file/d/1prSJQon0Er2FygbVYdExsMcTUj4rJsdg/view?usp=drive_link
