@@ -72,7 +72,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": ""
             }
           ]
         },
@@ -139,7 +139,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": "Bearer "
             }
           ]
         },
