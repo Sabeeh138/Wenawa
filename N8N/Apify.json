@@ -15,7 +15,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs?token=apify_api_E9AcK1a3YzERcPVNYsIBekT0scg2sO3yygCq",
+        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs?token=",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n    \"excludePinnedPosts\": false,\n    \"hashtags\": [\n        \"ai content\"\n    ],\n    \"proxyCountryCode\": \"None\",\n    \"resultsPerPage\": 25,\n    \"scrapeRelatedVideos\": false,\n    \"shouldDownloadAvatars\": false,\n    \"shouldDownloadCovers\": false,\n    \"shouldDownloadMusicCovers\": false,\n    \"shouldDownloadSlideshowImages\": false,\n    \"shouldDownloadSubtitles\": false,\n    \"shouldDownloadVideos\": false\n}",
@@ -32,7 +32,7 @@
     },
     {
       "parameters": {
-        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs/last/dataset/items?token=apify_api_E9AcK1a3YzERcPVNYsIBekT0scg2sO3yygCq",
+        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs/last/dataset/items?token=",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
