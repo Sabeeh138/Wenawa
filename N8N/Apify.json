@@ -1,0 +1,108 @@
+{
+  "name": "Apify",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "877b4501-00a0-4ba5-8799-b8635d1deb17",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs?token=apify_api_E9AcK1a3YzERcPVNYsIBekT0scg2sO3yygCq",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"excludePinnedPosts\": false,\n    \"hashtags\": [\n        \"ai content\"\n    ],\n    \"proxyCountryCode\": \"None\",\n    \"resultsPerPage\": 25,\n    \"scrapeRelatedVideos\": false,\n    \"shouldDownloadAvatars\": false,\n    \"shouldDownloadCovers\": false,\n    \"shouldDownloadMusicCovers\": false,\n    \"shouldDownloadSlideshowImages\": false,\n    \"shouldDownloadSubtitles\": false,\n    \"shouldDownloadVideos\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "41592588-c5f6-4368-a762-67b83933cdd1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/runs/last/dataset/items?token=apify_api_E9AcK1a3YzERcPVNYsIBekT0scg2sO3yygCq",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "e64e699d-741c-4044-abe3-9df12240d139",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "91f19b79-3e68-498e-a5c5-0877fcad9b25",
+      "name": "Wait",
+      "webhookId": "871f26c6-af65-4cdf-95f4-794dc0e60d25"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "12f595b1-d433-4e98-bd78-823b1a53664c",
+  "meta": {
+    "instanceId": "dfca4a08e73752122e628788ef2d8fc2c085248371ce611ada831d23114bd7ea"
+  },
+  "id": "vBzLJ76YcnEL9Ev6",
+  "tags": []
+}

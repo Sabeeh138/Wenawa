@@ -1,0 +1,462 @@
+{
+  "name": "Invoice Preprocessing",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "3f570d02-8a6a-4177-83a5-2db3e7c65a84",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5PNabh2RY4fMSQ6p",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "SO HERE. WHEN YOUVE LOGGED IN THE DRIVE, SELECT THE SPECIFIC FILE YOUVE CREATED, AND PIN THE DATA ASWELL, SO DATA IS STORED THERE",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -144
+      ],
+      "id": "c29c84f6-2cb0-4a7e-b7b4-36ffded2223a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "SHOULD BE DYNAMIC SO DRAG AND DROP THE ID OF FILE INTO THE SECTION ",
+        "height": 96,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -112
+      ],
+      "id": "8c640384-8041-4162-ac33-bcc41b810869",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        0
+      ],
+      "id": "5a75e027-4a02-401b-9449-7bfa2537be63",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "content": "TEXT WILL BE EXTRACTED HERE, MAKE SURE ITS BINARY WHEN U DOWNLOAD IT IN THE PREVIOUS NODE\n",
+        "height": 112,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -128
+      ],
+      "id": "778083cc-78c4-4cdd-95e4-4e935a19b58e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Invoice Number",
+              "description": "Number of invoice",
+              "required": true
+            },
+            {
+              "name": "Client Name",
+              "description": "\\The name of client",
+              "required": true
+            },
+            {
+              "name": "Client email",
+              "description": "email of client",
+              "required": true
+            },
+            {
+              "name": "Client Address",
+              "description": "the address of the client required",
+              "required": true
+            },
+            {
+              "name": "Client Phone",
+              "description": "The phone number of client",
+              "required": true
+            },
+            {
+              "name": "Total Amount",
+              "description": "total amount of invoice required",
+              "required": true
+            },
+            {
+              "name": "Invoice Date",
+              "description": "date of invoice sent",
+              "required": true
+            },
+            {
+              "name": "Due Date",
+              "description": "date its due",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        0
+      ],
+      "id": "f8bbadc1-4148-4179-954d-e705d68f3236",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "content": "BASICALLY ADD ALL THE TARGET ATTRIBUTES IN THE SHEET UR ACCESSING AND THEN EXTRACT THEM ALL\n",
+        "height": 96
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -112
+      ],
+      "id": "b0a73969-df30-4d08-9a23-e94c4d1c7c1d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        208
+      ],
+      "id": "11a1bc2e-b437-4c61-a2c9-ed25f3b54636",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "w25ldskobXEsgF4r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "OK SO HERE SELECT THE SHEET YOU WERE WORKING ON AND THE DOCUMENT, AND ALL THE ROWS WILL DROP BELOW, DRAG AND DROP THE BOX AND ITLL BE GOOD TO GO\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -144
+      ],
+      "id": "94f81ee1-f06a-4f04-bc24-50074b288cd7",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        256,
+        0
+      ],
+      "id": "9f972916-fa34-4440-ad8a-f3cb1c977938",
+      "name": "Download Binary",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5PNabh2RY4fMSQ6p",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "9429122f-f99a-489b-be5b-21cb74d8b675",
+      "name": "Update DB",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dBaYG7bqWmBjNpM8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Invoice Number:\nClient Name:\nClient Email:\nTotal Amount:\nInvoice Date:\nDue Date:\n"
+            },
+            {
+              "role": "system",
+              "content": "# Overview\nYou are an email Expert for Green Grass Corp called Greenie, you will recieve invoice information. Your job is to notify the internal billing team that an invoice was received/sent.\n\n## Email\nInform the billing team of the invoice , let them know we have updated this in the invoice database, and they can view it here \"Add sheet link here\"\n\n## Output\nOutput the following parameters seperately:\nSubject\nEmail"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        0
+      ],
+      "id": "8a484064-b812-4964-a856-fada93920989",
+      "name": "Create Email",
+      "credentials": {
+        "openAiApi": {
+          "id": "w25ldskobXEsgF4r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "DRAG AND DROP THE BOXES RELEVENT TO THE TEXT USER PROMPT SO IT GIVES ANS ACCORDING TO IT, CHANGE OUTPUT TO AS JSON SO U CAN EASILY DRAG AND DROP THE REQUIRED FIELDS IN GMAIL \n",
+        "height": 144,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -160
+      ],
+      "id": "64586379-9ff8-42d4-967c-4fe199c20ef9",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "DRAG AND DROP SUBJECT JSON TAB TO SUBJECT AND SAME FOR EMAIL BOX IN MESSAGE TEXTBOX, HARDCODE THE EMAIL IN TO WHOM U HAVE TO SEND\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -144
+      ],
+      "id": "171d44a2-60a4-4a19-ad1e-a8c91fd8ac55",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "emailType": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1632,
+        0
+      ],
+      "id": "705973dc-30e8-4eaa-a44b-74d8696b125b",
+      "name": "Send Email",
+      "webhookId": "7045768a-af13-45eb-95a1-c39ab3188eb5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FoCSAzBRsZHklqLm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        0
+      ],
+      "id": "45086955-fc38-4e79-bfd2-c242833c55ff",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Update DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Binary": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB": {
+      "main": [
+        [
+          {
+            "node": "Create Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Email": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cd26389c-88a0-4235-89a4-239d7e958826",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51e8c58aed13a30e4f2d245c5c268b66ebfca86e12f89136fdd0a18b28246999"
+  },
+  "id": "jFGq7aE260r53eg1",
+  "tags": []
+}
