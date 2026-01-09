@@ -1,0 +1,300 @@
+{
+  "name": "LinkedContent Creator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        288
+      ],
+      "id": "5bccce29-a9b9-4252-b8c8-4dad553172ab",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        48
+      ],
+      "id": "3df9d41f-0fe8-4715-bd94-8a1f1a1c175d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "ONCE CONNECTED PROPERLY, SET FILTERS TO GET THE SPECIFIC ROWS/ COLUMNS U WANT \nTEST IT AND CHECK IF ITS WORKING\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "1f8a842a-8a6b-418a-b0a4-2beceda5776b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        48
+      ],
+      "id": "a00c3a71-e4ec-4123-92a3-29458dcbb3e4",
+      "name": "Get Topic",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dBaYG7bqWmBjNpM8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "USED TAVILY, COPY THE CURL AND PASTE IT IN HTTPS REQUEST, GET TAVILY KEY AND PUT IT IN.\nALSO IN THE JSON, DRAG AND DROP THE 'TOPIC' BUTTON FROM SHEETS, TO QUERY SECTION AND ADD SOME MESSAGE WITH IT (OPTIONAL)",
+        "height": 208,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -176
+      ],
+      "id": "1dd4790b-b094-434e-a8c0-e8867938b0ac",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"who is Leo Messi?\",\n  \"auto_parameters\": false,\n  \"topic\": \"general\",\n  \"search_depth\": \"basic\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 1,\n  \"time_range\": null,\n  \"start_date\": \"2025-02-09\",\n  \"end_date\": \"2025-12-29\",\n  \"include_answer\": true,\n  \"include_raw_content\": true,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_favicon\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": [],\n  \"country\": null\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        400,
+        48
+      ],
+      "id": "4e4b8ad3-8a38-4be9-bec1-b63bc91ca0c9",
+      "name": "Tavily"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {
+          "systemMessage": "## 🧠 System Prompt: LinkedIn Post Generator\n\nYou are an AI assistant specialized in transforming three provided articles into a single, concise, and professional LinkedIn post.\n\n### 🎯 Your Task\n- Read the **3 input articles**.\n- Produce **one unified LinkedIn post** that:\n  - Is concise, polished, and professional  \n  - Maintains an **inspiring, forward-looking tone**  \n  - Merges insights from all articles into one coherent narrative  \n  - Uses **relevant emojis** (sparingly, for emphasis)  \n  - Adds **3–7 relevant hashtags**  \n  - Avoids fabricating information  \n  - Feels like a high-quality thought-leadership post\n\n### 📝 Output Format\n- 1–2 short, well-written paragraphs  \n- Final line with hashtags  \n- Use emojis wisely (no more than 5)\n\n### 📌 Style Guidelines\n- Professional but human  \n- Motivational and insight-driven  \n- Clear, modern, and easy to read  \n- No fluff, no repetition\n\nYou must rely only on the content provided in the 3 articles.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        704,
+        48
+      ],
+      "id": "690ed715-49c8-4206-9481-319db5eff4d4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "content": "IN THIS BASICALLY DRAG AND DROP THE CONTENT WHICH U GOT FROM TAVILY AND PAST IT IN THE DEFINE BELOW BOX MENTIONING LIKE ARTICLE 1: 'CONTENT'",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -272
+      ],
+      "id": "d66096e0-c3bb-42ac-ba37-058023a4a620",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "IN SYSTEM GENERATE A PROMPT FOR THE USE U WANT, GET IT FROM CHATGPT HARDCODED PROMPT, COULD BE FOR ANY USE, HERE IT FOR LINKEDIN SO GENERATE ONE FOR LINKEDIN",
+        "height": 144
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "4c1d68d2-2373-4229-9e0c-1b5c8ac2ab06",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        256
+      ],
+      "id": "1e375971-51f6-47e2-aa89-801473ea56d3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "w25ldskobXEsgF4r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        48
+      ],
+      "id": "2da90abc-8f9d-4fd9-85b5-da863ec65d11",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dBaYG7bqWmBjNpM8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "BASICALLY DRAG AND DROP THE TOPIC SECTION, UPDATE ROW, SELECT THE OUTPUT WHICH WAS GENERATED AND DRAG AND DROP IT TO UPDATE COLUMN\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -112
+      ],
+      "id": "27290781-5ba3-41ec-bd06-946ecf8ccfa1",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Topic": {
+      "main": [
+        [
+          {
+            "node": "Tavily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6fabb007-c771-4199-b908-a9ca051f8b93",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51e8c58aed13a30e4f2d245c5c268b66ebfca86e12f89136fdd0a18b28246999"
+  },
+  "id": "tZGb1P5sCdQ9JhR0",
+  "tags": []
+}

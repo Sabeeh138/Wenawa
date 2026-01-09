@@ -1,0 +1,212 @@
+{
+  "name": "FireCrawl",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eac760d1-3e61-4b9c-b373-0f01b88b6781",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/extract",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\n    \"https://quotes.toscrape.com/\"\n  ],\n  \"prompt\": \"Extract all quotes and their corresponding authors from the website.\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"quotes\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"text\": {\n              \"type\": \"string\"\n            },\n            \"author\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"text\",\n            \"author\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"quotes\"\n    ]\n  }\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "06a79779-c14e-43b0-8a79-af15a8b7a7a2",
+      "name": "Extract",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "irMsvmcOModVSEyd",
+          "name": "FireCrawl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.firecrawl.dev/v2/extract/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "164e01f3-c256-47ea-b3a5-8ef19714f707",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "irMsvmcOModVSEyd",
+          "name": "FireCrawl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "77e777f6-ae78-4303-9532-6272f2d4e195",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c667459e-2dd4-45f6-9819-a6bd23fd557d",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        80
+      ],
+      "id": "a477a5f7-9a84-4d07-a72d-b926394da2a9",
+      "name": "Wait",
+      "webhookId": "8ff61d9a-ea26-4fe1-89a6-c4b6b6dde94f"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        -192
+      ],
+      "id": "c38fcacd-a3d2-453f-a63a-3721d8d11b0b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "IN THE URL ADD \" * \" AT THE END OF THE LINK TO BASICALLY GET ALL THE EXTRACTION FROM THE PAGE, ELSE WITHOUT THAT ONLY ONE\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -144
+      ],
+      "id": "51383450-98df-4329-9196-2267282229d7",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "90e8a181-f4fa-403a-b9ca-41156fb689a2",
+  "meta": {
+    "instanceId": "dfca4a08e73752122e628788ef2d8fc2c085248371ce611ada831d23114bd7ea"
+  },
+  "id": "kSL5xq4tIoJOujSz",
+  "tags": []
+}

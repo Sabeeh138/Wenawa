@@ -1,0 +1,306 @@
+{
+  "name": "Text-Extraction",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        0
+      ],
+      "id": "8b5e271c-0fd8-4403-bc4b-cb64969da82c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WZA9MVdQDdmmcRJ4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "c937bf45-6dc4-4339-84d8-5bab1bb80199",
+      "name": "Get a message",
+      "webhookId": "1abce5cc-2c2a-4ed0-bb82-fd8d2eeea48c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WZA9MVdQDdmmcRJ4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1n56YAqYiGjhUtsgHM1hHukfL_wR-w_Wvgri8fbwMM6I",
+          "mode": "list",
+          "cachedResultName": "Sabeeh-Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n56YAqYiGjhUtsgHM1hHukfL_wR-w_Wvgri8fbwMM6I/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n56YAqYiGjhUtsgHM1hHukfL_wR-w_Wvgri8fbwMM6I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Subject": "={{ $('Get a message').item.json.subject }}",
+            "From": "={{ $('Get a message').item.json.from.value[0].address }}",
+            "Name": "={{ $json.name }}",
+            "Phone": "={{ $json.phone }}",
+            "Model": "={{ $json.model }}"
+          },
+          "matchingColumns": [
+            "From"
+          ],
+          "schema": [
+            {
+              "id": "From",
+              "displayName": "From",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Model",
+              "displayName": "Model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        0
+      ],
+      "id": "fe3b9ee2-e81e-4a4d-8181-827cd1f87dee",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tDkIVLQEkEgCvjpX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: assumes incoming data has 'textAsHtml' field\nconst html = items[0].json.textAsHtml || '';\n\n// Basic function to decode HTML entities\nfunction decodeEntities(text) {\n  const entities = {\n    '&amp;': '&',\n    '&lt;': '<',\n    '&gt;': '>',\n    '&quot;': '\"',\n    '&#39;': \"'\",\n    '&nbsp;': ' '\n  };\n  return text.replace(/&[^;]+;/g, match => entities[match] || match);\n}\n\n// Strip tags and decode\nconst plainText = decodeEntities(html.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim());\n\nreturn [{ json: { plainText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "2b7fd907-7b2c-4cb9-820a-d06140e64bca",
+      "name": "Get Plain Text from html"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Assume incoming data has 'plainText' field from previous node\nconst items = $input.all();  // Get all items, but likely just one\n\nreturn items.map(item => {\n  const text = item.json.plainText || '';\n\n  // Extract Name: after \"Name: \" until before next label or end\n  const nameMatch = text.match(/Name:\\s*([\\s\\S]*?)\\s*(Phone:|Email:|$)/i);\n  const name = nameMatch ? nameMatch[1].trim() : 'Not found';\n\n  // Extract Phone: after \"Phone: \" until before next label or end\n  const phoneMatch = text.match(/Phone:\\s*([\\s\\S]*?)\\s*(Email:|Looking forward|$)/i);\n  const phone = phoneMatch ? phoneMatch[1].trim() : 'Not found';\n\n  // Extract Model: from \"Model X200\" capturing X200\n  const modelMatch = text.match(/Model\\s*([\\w\\d]+)/i);  // Updated to capture alphanumeric\n  const model = modelMatch ? modelMatch[1].trim() : 'Not found';\n\n  return { json: { name, phone, model } };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "ab6ddb83-cebd-47b9-9ad2-21598a8919bb",
+      "name": "Get Output Json from text"
+    }
+  ],
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19b3cf07b286bf8f",
+          "threadId": "19b3c878a0b66a8c",
+          "labelIds": [
+            "UNREAD",
+            "CATEGORY_PERSONAL",
+            "INBOX"
+          ],
+          "sizeEstimate": 7929,
+          "headers": {
+            "delivered-to": "Delivered-To: wenawa.info@gmail.com",
+            "received": "Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])\r\n        by mx.google.com with SMTPS id 00721157ae682-78f9460fd9fsor39204437b3.4.2025.12.20.10.05.51\r\n        for <wenawa.info@gmail.com>\r\n        (Google Transport Security);\r\n        Sat, 20 Dec 2025 10:05:51 -0800 (PST)",
+            "x-received": "X-Received: by 2002:a05:690e:1448:b0:63f:9fd6:94f5 with SMTP id\r\n 956f58d0204a3-64663227d1dmr7731760d50.8.1766253950929; Sat, 20 Dec 2025\r\n 10:05:50 -0800 (PST)",
+            "arc-seal": "ARC-Seal: i=1; a=rsa-sha256; t=1766253951; cv=none;\r\n        d=google.com; s=arc-20240605;\r\n        b=fGUwCMAHQF/ZjDRb37qZ2T6szAOuTIfvw65mNGCdVxU/XwqSDVEfOL9hBkqQt1nGMF\r\n         2zy2SE1vnQECy9EkhPHHxIecflHXyH1ea0X/cWIQ4WX0LMg5EtpDCLB6BH1vDfSERTOd\r\n         NnujYDIKocMJdeUC774z//iI3Z1e15ewOpAd/+amQzJpvbLa06o3RBTDXKPhDWB/alcE\r\n         KObNqqXBXXVympVCa+3v7bCSEODlUR2TYTArk2d1f5A5APUkiQfjdlU74+bAuCHPQPWe\r\n         IenKtBJgUAL+kC7w4aM9R1ZjXU5MQnOJiCUBLZUIgE0riHmxNcRHPBM7j4IMQ+1JKb/O\r\n         D7bQ==",
+            "arc-message-signature": "ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;\r\n        h=to:subject:message-id:date:from:in-reply-to:references:mime-version\r\n         :dkim-signature;\r\n        bh=5MH1juOpcg2J5w/h5zwPpqrDCp+yx9s9j0FLEChbQYY=;\r\n        fh=pXXVGUc4XvoVsgdqjDWqh+IqguE2jtGngVZyN8oORYY=;\r\n        b=kkb/FbJQPlyxnFlCm+ZY9SI0ndGzzA55m0DjRoiHTdUfgvNcZymzAu1+fhdEv1GIDn\r\n         fPFhjYEgYHDpQ7hkmiWyKXkJZAJI2udXfHIKHUPLGSZ9Uk5BpCX5gfeSc/SfYqSu51FW\r\n         zN1PdKawuS8PC77nJivpzvBusyTQMF+CUIRi8AFH6ehThv/AqX/FMdsiZa06bl5UpUQm\r\n         dOSpWctTw1z2hfX40z5lEYT/TLGulpLUl6Z0CTdeiNJTQ7wZBW3zz2dEY0iNagKpz2eE\r\n         kUuyNUY9KxU8OKaV14DXZdEqD7udmA6vPenHg0D+EvhFkPpyZEa4oOSFT7cs5Rcv/GVm\r\n         nAqA==;\r\n        dara=google.com",
+            "arc-authentication-results": "ARC-Authentication-Results: i=1; mx.google.com;\r\n       dkim=pass header.i=@gmail.com header.s=20230601 header.b=fbiGWCra;\r\n       spf=pass (google.com: domain of msabeehajaz@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=msabeehajaz@gmail.com;\r\n       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com;\r\n       dara=pass header.i=@gmail.com",
+            "return-path": "Return-Path: <msabeehajaz@gmail.com>",
+            "received-spf": "Received-SPF: pass (google.com: domain of msabeehajaz@gmail.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;",
+            "authentication-results": "Authentication-Results: mx.google.com;\r\n       dkim=pass header.i=@gmail.com header.s=20230601 header.b=fbiGWCra;\r\n       spf=pass (google.com: domain of msabeehajaz@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=msabeehajaz@gmail.com;\r\n       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com;\r\n       dara=pass header.i=@gmail.com",
+            "dkim-signature": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;\r\n        d=gmail.com; s=20230601; t=1766253951; x=1766858751; dara=google.com;\r\n        h=to:subject:message-id:date:from:in-reply-to:references:mime-version\r\n         :from:to:cc:subject:date:message-id:reply-to;\r\n        bh=5MH1juOpcg2J5w/h5zwPpqrDCp+yx9s9j0FLEChbQYY=;\r\n        b=fbiGWCras+9Vum3CX07rypQSvEq8hpQ6g6itW7cEbabzKuXSpczx5HuFUtWApB8kuR\r\n         6JUg6y3PeJgmJZpL89y4H9WQ5muDqzFwQafPHSQ80ENMGc6e+jS+lg9utBKM5Hka6sVa\r\n         72YFXcahMXxAc3CWnmNfqEcYAThpPTeKtA10pu2CyfZN77geOXFgmTd0aMxv8IpsH2NZ\r\n         pG9JfwpZ++N7Mn5LVNI3hNVcWqaBo+ZPPSmpHFYW+NNDL1u+TFxzXskxY2esrVEAirA0\r\n         Rt3KtrTQySzrJGB3ADHXKS067cVubjBc68s/d9iHEoujFduUpram+YVP0hL00cKqhGNy\r\n         eYVA==",
+            "x-google-dkim-signature": "X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;\r\n        d=1e100.net; s=20230601; t=1766253951; x=1766858751;\r\n        h=to:subject:message-id:date:from:in-reply-to:references:mime-version\r\n         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id\r\n         :reply-to;\r\n        bh=5MH1juOpcg2J5w/h5zwPpqrDCp+yx9s9j0FLEChbQYY=;\r\n        b=xUiBgsB9mqekPoFzBy3sKdCL3bBmmwu6c15vr96fzs8tpFtYyXONSQ2vS2dgZooLca\r\n         zPPZ8fw7k7qqwEd1+I00apgLFFRYd4cWSgbzRTp367MtBy9gDyF/NLPl+aUC4yjCICBU\r\n         6+ZjvpBB7BCilR9Pvu9Qxkdiz076SIYz0yA1t/E3SWOi8pcXHfypSeLOxU0ciPVaPp67\r\n         NS8TDx2JBxgjbaAGR4h9CpPemsJN4CwFVWlMw1tVRdF2Ub+SiAIgYO5yyVk6Pynj6dEZ\r\n         pHQ71NFmFep+C5/zExD+LSO0AyVYojZZnVBHl41x9Towaj/FXT2uJEuO4HBFyUhXWJMX\r\n         N/+Q==",
+            "x-gm-message-state": "X-Gm-Message-State: AOJu0YyNCtXm+vsuPVbbEXVOYGaexTwgwkNk7t1ugSPLH6Row/08h/EN\r\n\tqRPBXVPnpA2ib3OvA6yBndowMPC32qnzKVYQVnHwdaGqMozkkVHofDGz2stg0OSSgibt8RdcVmY\r\n\t642xhaHgoepV3l/mR6q0p3VSa8/hn0D2spw==",
+            "x-gm-gg": "X-Gm-Gg: AY/fxX4Ok0SMbyuZfmLkLUw7SNe1d045nJEHmMd+hrhlJcGc1WMqpo6FrH4vFAgGWzJ\r\n\tXWBma0ba52mDFTie47XUEyvuJ7O5Mlz6lwNdduIBqSY8J9FSxHpSWbxY9KHDe+QL9phUHDP1Bmt\r\n\tyG9eIWhIDQi8wMC9PprmivH+YO1tW8ieFDimU9ONkfh6LpzarDc9geIE4Ddbb5xoxKoo3+pChIb\r\n\tlj83kgSk3mcEZjbaPYXiuMOW+6Oox/+yWL2XNIiRE5+y1wy1bdUs3ak3WoN5cb9QoDS8v0j+ZiW\r\n\t9TLXL/22Tfk/Aak6zJMr5iBV+v0=",
+            "x-google-smtp-source": "X-Google-Smtp-Source: AGHT+IHnJGwfflycEHK+fBiw753AVczA40PyE9Y+HFDrXt/L2t/mGd4PQn7Eod/5MHe8e/lNc65Srq6ZR7Y4HmT6BPM=",
+            "mime-version": "MIME-Version: 1.0",
+            "references": "References: <CADEnKHnbB07fNxnfrX56_GLFtwxPVfMW_x99=E3zuL_h=51t-A@mail.gmail.com>",
+            "in-reply-to": "In-Reply-To: <CADEnKHnbB07fNxnfrX56_GLFtwxPVfMW_x99=E3zuL_h=51t-A@mail.gmail.com>",
+            "from": "From: Muhammad Sabeeh <msabeehajaz@gmail.com>",
+            "date": "Date: Sat, 20 Dec 2025 23:05:40 +0500",
+            "x-gm-features": "X-Gm-Features: AQt7F2pEwKWVJJ3ng80ojSDs-1jvB4wIje4x4MEVO_PpCfn8ve72EayQZI7tdhs",
+            "message-id": "Message-ID: <CADEnKHmZDkLycgD3Jabd65Xpnyg0BG-1taqCL_L2WfU+-F48jQ@mail.gmail.com>",
+            "subject": "Subject: Fwd: Subject: Inquiry about Product Pricing and Availability",
+            "to": "To: wenawa.info@gmail.com",
+            "content-type": "Content-Type: multipart/alternative; boundary=\"000000000000540c9d0646660bcc\""
+          },
+          "html": "<div dir=\"ltr\"><br><br><div class=\"gmail_quote gmail_quote_container\"><div dir=\"ltr\" class=\"gmail_attr\">---------- Forwarded message ---------<br>From: <strong class=\"gmail_sendername\" dir=\"auto\">Muhammad Sabeeh</strong> <span dir=\"auto\">&lt;<a href=\"mailto:msabeehajaz@gmail.com\">msabeehajaz@gmail.com</a>&gt;</span><br>Date: Sat, Dec 20, 2025 at 9:11 PM<br>Subject: Subject: Inquiry about Product Pricing and Availability<br>To:  &lt;<a href=\"mailto:wenawa.info@gmail.com\">wenawa.info@gmail.com</a>&gt;<br></div><br><br><div dir=\"ltr\"><p>Hello Team,</p><p>I hope you are doing well.</p><p>I wanted to inquire about your product <strong>Smart Water Purifier – Model X200</strong>. I would like to know the following details:</p><ul><li><p>Current price</p></li><li><p>Availability</p></li><li><p>Estimated delivery time to Lahore</p></li></ul><p>Please feel free to contact me if you need any additional information.</p><p>Name: Ali Khan<br>Phone: +92 300 1234567<br>Email: <a disabled>alikhan@gmail.com</a></p><p>Looking forward to your response.</p><p>Best regards,<br>Ali Khan</p></div>\n</div></div>\n",
+          "text": "---------- Forwarded message ---------\nFrom: Muhammad Sabeeh <msabeehajaz@gmail.com>\nDate: Sat, Dec 20, 2025 at 9:11 PM\nSubject: Subject: Inquiry about Product Pricing and Availability\nTo: <wenawa.info@gmail.com>\n\n\nHello Team,\n\nI hope you are doing well.\n\nI wanted to inquire about your product *Smart Water Purifier – Model X200*.\nI would like to know the following details:\n\n   -\n\n   Current price\n   -\n\n   Availability\n   -\n\n   Estimated delivery time to Lahore\n\nPlease feel free to contact me if you need any additional information.\n\nName: Ali Khan\nPhone: +92 300 1234567\nEmail: alikhan@gmail.com\n\nLooking forward to your response.\n\nBest regards,\nAli Khan\n",
+          "textAsHtml": "<p>---------- Forwarded message ---------<br/>From: Muhammad Sabeeh &lt;<a href=\"mailto:msabeehajaz@gmail.com\">msabeehajaz@gmail.com</a>&gt;<br/>Date: Sat, Dec 20, 2025 at 9:11&#x202F;PM<br/>Subject: Subject: Inquiry about Product Pricing and Availability<br/>To: &lt;<a href=\"mailto:wenawa.info@gmail.com\">wenawa.info@gmail.com</a>&gt;</p><p>Hello Team,</p><p>I hope you are doing well.</p><p>I wanted to inquire about your product *Smart Water Purifier &ndash; Model X200*.<br/>I would like to know the following details:</p><p>   -</p><p>   Current price<br/>   -</p><p>   Availability<br/>   -</p><p>   Estimated delivery time to Lahore</p><p>Please feel free to contact me if you need any additional information.</p><p>Name: Ali Khan<br/>Phone: +92 300 1234567<br/>Email: <a href=\"mailto:alikhan@gmail.com\">alikhan@gmail.com</a></p><p>Looking forward to your response.</p><p>Best regards,<br/>Ali Khan</p>",
+          "subject": "Fwd: Subject: Inquiry about Product Pricing and Availability",
+          "references": "<CADEnKHnbB07fNxnfrX56_GLFtwxPVfMW_x99=E3zuL_h=51t-A@mail.gmail.com>",
+          "date": "2025-12-20T18:05:40.000Z",
+          "to": {
+            "value": [
+              {
+                "address": "wenawa.info@gmail.com",
+                "name": ""
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><a href=\"mailto:wenawa.info@gmail.com\" class=\"mp_address_email\">wenawa.info@gmail.com</a></span>",
+            "text": "wenawa.info@gmail.com"
+          },
+          "from": {
+            "value": [
+              {
+                "address": "msabeehajaz@gmail.com",
+                "name": "Muhammad Sabeeh"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Muhammad Sabeeh</span> &lt;<a href=\"mailto:msabeehajaz@gmail.com\" class=\"mp_address_email\">msabeehajaz@gmail.com</a>&gt;</span>",
+            "text": "\"Muhammad Sabeeh\" <msabeehajaz@gmail.com>"
+          },
+          "messageId": "<CADEnKHmZDkLycgD3Jabd65Xpnyg0BG-1taqCL_L2WfU+-F48jQ@mail.gmail.com>",
+          "inReplyTo": "<CADEnKHnbB07fNxnfrX56_GLFtwxPVfMW_x99=E3zuL_h=51t-A@mail.gmail.com>"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Get Plain Text from html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Plain Text from html": {
+      "main": [
+        [
+          {
+            "node": "Get Output Json from text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Output Json from text": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "66b0e9ac-8bb9-482d-93d0-954d5eb98334",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dfca4a08e73752122e628788ef2d8fc2c085248371ce611ada831d23114bd7ea"
+  },
+  "id": "xJ6t4HWSVPj9cmjq",
+  "tags": []
+}
