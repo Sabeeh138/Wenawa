@@ -1,0 +1,12 @@
+requests
+python-dotenv
+TTS
+torch
+sounddevice
+soundfile
+livekit
+livekit-agents
+livekit-plugins-silero
+livekit-api
+numpy
+scipy
