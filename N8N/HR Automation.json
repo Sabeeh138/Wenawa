@@ -1,0 +1,704 @@
+{
+  "name": "HR Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": true,
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1500,
+        200
+      ],
+      "id": "356ee5ec-fb9d-49d2-823c-ebe38057ad18",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1JjDkdYYYzv2WJDH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        380
+      ],
+      "id": "7521e347-ab63-4fab-9f60-b66c2f7d3579",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "7VTqAAevuFvctM3r",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI classification result from the previous node\nconst classification = $input.first().json.output;\n\n// Map each classification to its Google Drive folder ID\nconst folderMap = {\n  \"AI\": \"1HDuqwffnZvDk-nWS-dM2q0Jw2zSQs-hi\",\n  \"Web\": \"1elZ0G__VvbLMJavORYz49wZmc_a5EbLa\",\n  \"Mobile\": \"1va3eBzVRsuE-UqK6v9S8984K47OUpPuO\",\n  \"UI\": \"1LeWbGlChDsSowiAssoRH3GN36s_0VlHu\",\n  \"UX\": \"1LeWbGlChDsSowiAssoRH3GN36s_0VlHu\", // Assuming same as UI\n  \"Flutter Developer\": \"1D1kSBeAkE3BtWa6WoABfHp1Toxs992g5\",\n  \"DotNet\": \"1UvbtrSRFY7mHGrF1tt_E7ko-AMwZoWUj\",\n  \"DevOps\": \"1a2nlPcrxxzJwXqJlwFZl37tbUZSIEgE7\",\n  \"Marketing\": \"1b0-PMdMPIC5ah2u3F4ft_8dOHMhQyJiZ\",\n  \"Customer Service\": \"1pUHRS_0HYtdjuE0UbFmS9Z3qqRy5iOXD\",\n  \"Other\": \"1uFQvabku8Gsx2W11_C-_er7FoP0ez8KM\",\n};\n\n// Look up the folder ID based on the classification\nconst folderId = folderMap[classification] || folderMap[\"Other\"]; // fallback to \"Other\" if unknown\n\n// Return it as part of the new output\nreturn [\n  {\n    json: {\n      ...$json,\n      folderId: folderId\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        520
+      ],
+      "id": "dec5acdb-9b68-415c-bc50-2ca75837770f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -400,
+        540
+      ],
+      "id": "e3b659f9-73d9-42ff-8f39-eddfe8fcdc55",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        560
+      ],
+      "id": "3f71bdc7-8ea4-4530-8a8f-5f0477a49a45",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        100,
+        800
+      ],
+      "id": "1e93c96a-99ec-4f42-b66a-ffd483b180b2",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "7VTqAAevuFvctM3r",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 1: Get the raw output string from the AI agent\nconst rawOutput = $json.output;\n\n// Step 2: Extract the JSON portion from the string\nconst jsonStart = rawOutput.indexOf('{');\nconst jsonEnd = rawOutput.lastIndexOf('}');\nconst jsonString = rawOutput.slice(jsonStart, jsonEnd + 1);\n\n// Step 3: Parse the string into an actual JSON object\nlet parsed;\ntry {\n  parsed = JSON.parse(jsonString);\n} catch (error) {\n  throw new Error(\"Failed to parse JSON: \" + error.message);\n}\n\n// Optional cleanup: Force contact_number to be string\nif (parsed.contact_number) {\n  parsed.contact_number = parsed.contact_number.toString();\n}\n\n// Step 4: Return the structured data\nreturn [\n  {\n    json: parsed\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        920
+      ],
+      "id": "d4d1aa04-d083-4fc4-9145-5e0def2152f5",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -460,
+        940
+      ],
+      "id": "7d737da6-011b-4a03-8f51-0fa2eee2c9e1",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const classification = $json.output;\n\n// Map classification to the correct sheet tab name\nconst sheetMap = {\n  \"AI\": \"AI\",\n  \"MEAN/MERN\": \"MEAN/MERN\",\n  \"Web\": \"Web\",\n  \"Mobile\": \"Mobile\",\n  \"UI/UX\": \"UI/UX\",\n  \"Flutter Developer\": \"Flutter Developer\",\n  \"DotNet\": \"DotNet\",\n  \"DevOps\": \"DevOps\",\n  \"Marketing\": \"Marketing\",\n  \"Customer Service\": \"Customer Service\",\n  \"Other\": \"Other\",\n};\n\n// Use \"Other\" as fallback\nconst sheetName = sheetMap[classification] || \"Other\";\n\n// Return all fields along with sheetName\nreturn [\n  {\n    json: {\n      ...$json,\n      sheetName\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        940
+      ],
+      "id": "7ee060a2-bc4e-4c40-8c02-2b74fb806317",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryKeys = Object.keys($binary || {});\nconst hasAttachment = binaryKeys.length > 0;\n\nlet newBinary = {};\nif (hasAttachment) {\n  const firstKey = binaryKeys[0];\n  const file = $binary[firstKey];\n\n  // Make sure file exists and has required props\n  if (file && file.data) {\n    newBinary['resume.pdf'] = file;\n  }\n}\n\nreturn [\n  {\n    json: {\n      hasAttachment,\n      email: $json.from?.value?.[0]?.address || \"unknown@example.com\"\n    },\n    binary: newBinary\n  }\n];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1220,
+        20
+      ],
+      "id": "d968385a-7032-4295-afff-444786974cfd",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cc8ec329-269d-41e4-a11d-38cd6ed145c0",
+              "leftValue": "={{ $json.hasAttachment }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -940,
+        200
+      ],
+      "id": "a57bd629-ac51-4978-a116-ee461aee2420",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -660,
+        20
+      ],
+      "id": "eca5cb45-a7fe-430e-b24c-2e3700d9c3ef",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the plain test of the resume:\n{{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are a highly intelligent and context-aware resume classifier.\nYou will be given the plain text of a candidate's resume.\nYour task is to analyze the overall resume content and context, and classify it into exactly one of the following case-sensitive categories that best reflects the candidate’s primary area of expertise and professional identity.\n\nInstructions\nFocus on the candidate's major skills, dominant experience, and primary job roles.\n\nIf the resume mentions multiple fields, classify based on the strongest or most emphasized field — the one with the most depth, projects, experience, or keywords.\n\nYour output must be a single word only, chosen from the list below.\nNo explanations, punctuation, or formatting — just the exact category name.\n\nValid Categories (case-sensitive output)\n\nMEAN/MERN  \nWeb  \nMobile  \nUI/UX  \nAI  \nFlutter\nDotnet  \nMarketing  \nCustomerService  \nDevOps  \nOther\n\nClassification Rules:\n\nMEAN/MERN → Resume shows full stack development using MongoDB, Express, Angular/React, Node.js.\n\nWeb → Focus is on React, Angular, JavaScript, HTML/CSS, or general frontend/backend web development without MEAN/MERN-specific stack.\n\nMobile → Experience in building native Android/iOS apps, multiple frameworks (e.g., React Native, Kotlin, Swift, etc.).\n\nFlutter → Focused primarily on Flutter-based mobile development only.\n\nUI/UX → Emphasis on Figma, wireframing, user experience design, or visual design roles.\n\nAI → Heavy focus on machine learning, deep learning, AI models, NLP, data science, or research in AI.\n\nDotnet → Work in .NET stack, including ASP.NET, C#, VB.NET, or Microsoft technologies.\n\nMarketing → Roles in SEO, digital marketing, performance marketing, content creation, or branding.\n\nCustomerService → Work in customer support, BPO, call centers, helpdesk, service desk, or support roles.\n\nDevOps → Focus on CI/CD, Docker, Kubernetes, cloud infrastructure (AWS/GCP/Azure), automation pipelines.\n\nOther → Anything that does not clearly fit into the above (e.g., cybersecurity, blockchain, hardware engineering, game development, IoT, etc.).\n\nSpecial Notes:\n\nCybersecurity, blockchain, AR/VR, or non-software roles (e.g., project management, academic research, mechanical engineering) → must be classified as Other.\n\nIf resume touches AI tools but isn’t actually about building AI/ML systems, do not classify as AI — go with the dominant technical field or Other.\n\nPrioritize what the candidate is most experienced or job-ready for."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "524e924c-5ee8-4def-b44c-41b96ce31a68",
+      "name": "Resume Classifier"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the raw resume text:\n {{ $json.text }}",
+        "options": {
+          "systemMessage": "You are an intelligent resume parser. From the following raw resume text, extract the relevant candidate information and return a clean JSON object.\n\nIf any information is not explicitly mentioned or cannot be confidently inferred, return its value as `\"none\"`.\n\nHere are the fields to extract:\n\n- name\n- email\n- contact_number\n- current_role\n- current_salary\n- current_company\n- expected_salary\n- notice_period\n- years_of_experience\n- University_Name\n- linkedin_profile\n- github_profile\n\nPlease respond ONLY in this exact JSON format:\n\n{\n  \"name\": \"Candidate Name\",\n  \"email\": \"email@example.com\",\n  \"contact_number\": \"+1234567890\",\n  \"current_role\": \"Software Engineer\",\n  \"current_salary\": \"8 LPA\",\n  \"current_company\" :\"XYZ Company\"\n  \"expected_salary\": \"10 LPA\",\n  \"notice_period\": \"30 days\",\n  \"university_name\" : \"ABC University\"\n  \"years_of_experience\": \"3 years\",\n  \"linkedin_profile\": \"https://linkedin.com/in/username\",\n  \"github_profile\": \"https://github.com/username\"\n}\n\nAgain, if any field is missing in the resume text, set its value to \"none\". Do not include any other text or explanation — only the JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        500,
+        560
+      ],
+      "id": "c49dcaf5-263c-4e9c-a67d-f4e095d07cd9",
+      "name": "Resume Parser"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "={{ $json.from.value[0].name }} Resume",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.folderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -20,
+        540
+      ],
+      "id": "b5032234-bb4a-4f3e-a0d4-f554ce6a0527",
+      "name": "Upload Resume",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "KI3AmzuHLuEjFBPf",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UmAQ3ltYRbnClKci486to-8CF6MHC9z91b8FR8cEsZk",
+          "mode": "list",
+          "cachedResultName": "Candidates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UmAQ3ltYRbnClKci486to-8CF6MHC9z91b8FR8cEsZk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.sheetName }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "contact_number": "={{ $json.contact_number }}",
+            "email": "={{ $json.email }}",
+            "current_salary": "={{ $json.current_salary }}",
+            "current_company": "={{ $json.current_company }}",
+            "expected_salary": "={{ $json.expected_salary }}",
+            "notice_period": "={{ $json.notice_period }}",
+            "years_of_experience": "={{ $json.years_of_experience }}",
+            "university_name": "={{ $json.university_name }}",
+            "linkedin_profile": "={{ $json.linkedin_profile }}",
+            "github_profile": "={{ $json.github_profile }}",
+            "current_role": "={{ $json.current_role }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_number",
+              "displayName": "contact_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_salary",
+              "displayName": "current_salary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_company",
+              "displayName": "current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expected_salary",
+              "displayName": "expected_salary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notice_period",
+              "displayName": "notice_period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "years_of_experience",
+              "displayName": "years_of_experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "university_name",
+              "displayName": "university_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin_profile",
+              "displayName": "linkedin_profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "github_profile",
+              "displayName": "github_profile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_role",
+              "displayName": "current_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -20,
+        940
+      ],
+      "id": "5c4be277-238f-4aaa-890e-c7c8aabdb593",
+      "name": "Candidate Info Entry",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qqd7kEsxH2KmtqAE",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Attach Your Resume",
+        "message": "=Dear Candidate,\n\nYou have not attached yoiur resume with the job application email. Please do attach attach your resume otherwise we won't be able to move forward with your application.\n\nRegards,\nHR Executive\nSarah Khan\nABC Tech",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -460,
+        220
+      ],
+      "id": "6649856a-14b1-40a2-9bb4-4cc61055a085",
+      "name": "Attach Resume Message",
+      "webhookId": "cf493f7b-06ce-48d7-bf44-52b94c63d33e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1JjDkdYYYzv2WJDH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        20
+      ],
+      "id": "0ce91520-46ab-4638-87f5-2856aeade646",
+      "name": "Extract Resume Content"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Resume Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Candidate Info Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Attach Resume Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Extract Resume Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Classifier": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Resume Parser": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Resume": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Resume Content": {
+      "main": [
+        [
+          {
+            "node": "Resume Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50dc8d38-6bc1-4a0f-b280-27694902c517",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd57363e7f9849a6d1ffc6f1c99772691f7041cf95e0ea2508717d23c8aec903"
+  },
+  "id": "f4VA5CchS8YEJWbg",
+  "tags": []
+}
